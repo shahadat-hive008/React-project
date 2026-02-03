@@ -11,6 +11,11 @@ export default function Button({
   ariaLabel,
   onMouseDown,
 }: ButtonProps) {
+  const dynamicClasses = pressed
+    ? 'bg-indigo-400 text-white'
+    : 'bg-indigo-100 hover:bg-indigo-200';
+
+  const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed' : '';
   return (
     <button
       type="button"
@@ -20,7 +25,7 @@ export default function Button({
       aria-pressed={pressed}
       aria-label={ariaLabel}
       onMouseDown={onMouseDown}
-      className={`${buttonCommonClasses} ${actionButtonClasses} ${className}`}
+      className={`${buttonCommonClasses} ${actionButtonClasses} ${dynamicClasses} ${disabledClasses} ${className}`}
     >
       {children}
     </button>

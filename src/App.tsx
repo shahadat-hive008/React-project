@@ -1,59 +1,25 @@
 import { useEffect, useRef, useState } from "react";
-import { seededData } from "./data/fake-data";
-import type { Todo, todoFilter } from "./typescript/interface";
+import { priorityBadgeClasses, type Todo, type todoFilter } from "./typescript/interface";
 import { buttonCommonClasses, actionButtonClasses } from "./customStyle/style";
 import Button from "./components/Button";
+import { loadTodos } from "./utils/loadTodos";
+import { getInitialFilter, getInitialPriority } from "./utils/loadTodosFilter";
 
 const STORAGE_KEY = "react-play:simple-todo-app";
 const FILTER_KEY = `${STORAGE_KEY}:filter`;
+const PRIORITY_KEY = `${STORAGE_KEY}:priority`;
 
 function App() {
   //Input text
   const [text, setText] = useState("");
   //Select text 
-  const [priority, setPriority] = useState("Low");
-
-  const [todos, setTodos] = useState<Todo[]>(() => {
-    if (typeof window === "undefined") return seededData;
-    try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (!stored) return seededData;
-      const parsed = JSON.parse(stored) as Array<Partial<Todo>>;
-      if (!Array.isArray(parsed)) return seededData;
-
-      const fallbackTime = Date.now();
-      const sanitized = parsed
-        .filter(
-          (todo): todo is Partial<Todo> & Required<Pick<Todo, "text">> =>
-            typeof todo === "object" &&
-            todo !== null &&
-            typeof todo.text === "string",
-        )
-        .map((todo, index) => ({
-          id: typeof todo.id === "number" ? todo.id : fallbackTime + index,
-          text: todo.text.trim(),
-          completed: Boolean(todo.completed),
-          createdAt:
-            typeof todo.createdAt === "number"
-              ? todo.createdAt
-              : fallbackTime + index,
-          priority: todo.priority
-        }))
-        .filter((todo) => todo.text.length > 0);
-      return sanitized.length > 0 ? sanitized : seededData;
-    } catch (e) {
-      return seededData;
-    }
-  });
-
-  const [filter, setFilter] = useState<todoFilter>(() => {
-    if (typeof window === "undefined") return "all";
-    const stored = window.localStorage.getItem(FILTER_KEY);
-    if (stored === "all" || stored === "active" || stored === "completed")
-      return stored;
-
-    return "all";
-  });
+  const [priority, setPriority] = useState<Todo["priority"]>("low");
+  //todos save state
+  const [todos, setTodos] = useState<Todo[]>(() => loadTodos(STORAGE_KEY));
+  //Todos Priority
+  const [priorityFilter, setPriorityFilter] = useState<Todo['priority'] | "all">(() => getInitialPriority(PRIORITY_KEY));
+  //Todos filter State
+  const [filter, setFilter] = useState<todoFilter>(() =>  getInitialFilter(FILTER_KEY) );
 
   //Edit Todos state
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -77,17 +43,50 @@ function App() {
     window.localStorage.setItem(FILTER_KEY, filter);
   }, [filter]);
 
+   // save priorityin local storage
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(PRIORITY_KEY, priorityFilter);
+  }, [priorityFilter]);
+
   //Click edit button will focus eidtInput
   useEffect(() => {
     if (editingId !== null) editInputRef.current?.focus();
   }, [editingId]);
 
+  //Url params for filter
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("filter", filter);
+    url.searchParams.set("priority", priorityFilter);
+    window.history.replaceState({}, "", url.toString());
+  }, [filter, priorityFilter]);
+
+
   //FilterTodos to show active or completed
   const filteredTodos = todos.filter((todo) => {
-    if (filter === "all") return todo;
-    if (filter === "active") return !todo.completed;
-    if (filter === "completed") return todo.completed;
-    return false;
+    let statusMatch = false;
+    let priorityMatch = false;
+
+    if (filter === "all") {
+      statusMatch = true;
+    } else if (filter === "active") {
+      statusMatch = !todo.completed;
+    } else if (filter === "completed") {
+      statusMatch = todo.completed;
+    }
+
+    if (priorityFilter === "all") {
+      priorityMatch = true;
+    } else {
+      priorityMatch = todo.priority === priorityFilter;
+    }
+
+    return statusMatch && priorityMatch;
+
   });
 
   //Sort todos that completed todos will appear in bottom
@@ -141,8 +140,9 @@ function App() {
       },
       ...prev,
     ]);
-
+    
     setText("");
+    setPriority("low");
   };
 
   //complete todo action
@@ -222,6 +222,19 @@ function App() {
   commitTodo();
  }
 
+ //reset filter
+ const resetFilters = () => {
+  setFilter("all");
+  setPriorityFilter("all");
+  // Optional: remove from URL
+  if (typeof window !== "undefined") {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("filter");
+    url.searchParams.delete("priority");
+    window.history.replaceState({}, "", url.toString());
+  }
+};
+
   return (
     <>
       <div className="p-4 flex flex-col justify-center items-center my-5">
@@ -240,11 +253,13 @@ function App() {
               aria-label="Todo description"
               placeholder="Add a new task..."
               value={text}
+              required
               onChange={(event) => setText(event.target.value)}
             />
             <select 
             className="bg-indigo-200 px-2 py-4 rounded-sm focus:outline-none"
-            onChange={(e) => setPriority(e.target.value as any)} 
+            value={priority}
+            onChange={(e) => setPriority(e.target.value as Todo["priority"])} 
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -260,7 +275,9 @@ function App() {
             {/* Status */}
             <p className="flex items-center gap-2">
               <span>
-                {remainingTodos} {remainingTodos === 1 ? "task" : "tasks"} left
+                  {completionRate === 100
+                    ? "No task left"
+                    : `${remainingTodos} ${remainingTodos === 1 ? "task" : "tasks"} left`}
               </span>
               {hasTodos && (
                 <span className="bg-indigo-300 rounded-2xl px-2 py-0.5 font-semibold">
@@ -273,23 +290,39 @@ function App() {
               <Button 
                onClick={() => setFilter('all')}
                pressed={filter === 'all'}
-               className={filter === 'all' ? 'bg-indigo-400' : 'bg-indigo-100 hover:bg-indigo-200'}
               >
                 All
               </Button>
               <Button 
                onClick={() => setFilter('active')}
                pressed={filter === 'active'}
-               className={filter === 'active' ? 'bg-indigo-400' : 'bg-indigo-100 hover:bg-indigo-200'}
               >
                 Active
               </Button>
               <Button 
                onClick={() => setFilter('completed')}
                pressed={filter === 'completed'}
-               className={filter === 'completed' ? 'bg-indigo-400' : 'bg-indigo-100 hover:bg-indigo-200'}
               >
                 Completed
+              </Button>
+              {/* Priority Based Filter */}
+              <Button 
+                onClick={() => setPriorityFilter("high")}
+                pressed={priorityFilter === "high"}
+              >
+                High
+              </Button>
+              <Button 
+                onClick={() => setPriorityFilter("medium")}
+                pressed={priorityFilter === "medium"}
+              >
+                Medium
+              </Button>
+              <Button 
+                onClick={() => setPriorityFilter("low")}
+                pressed={priorityFilter === "low"}  
+              >
+                Low
               </Button>
               {/* To do button action */}
               <Button onClick={toggleBtn} disabled={!hasTodos} ariaDisabled={!hasTodos}>
@@ -301,6 +334,13 @@ function App() {
               <Button onClick={clearAll} disabled={!hasTodos} ariaDisabled={!hasTodos}>
                   Clear all
               </Button>
+              <Button
+                onClick={resetFilters}
+                className="bg-red-400 hover:bg-red-500 text-white px-4 py-2 rounded-sm"
+              >
+                Reset Filters
+              </Button>
+
             </div>
             <ul className="flex flex-col gap-5">
               {sortedTodos.length === 0 && (
@@ -325,7 +365,7 @@ function App() {
                       {isEditing ? (
                         <input
                           aria-label="Edit todo text"
-                          className="flex-1 px-1 py-3 border border-indigo-200 focus:outline-none rounded-sm "
+                          className="flex-1 px-1 py-1.5 border border-indigo-200 focus:outline-none rounded-sm "
                           ref={editInputRef}
                           value={editingText}
                           onBlur={handleEditBlur}
@@ -334,8 +374,9 @@ function App() {
                           }
                           onKeyDown={handleEditKeyDown}
                         />
-                      ) : (
-                        <span>{todo.text}</span>
+                      ) : ( 
+                        <><span>{todo.text}</span> <span className= {`px-2 py-1 rounded-full text-sm font-semibold capitalize ${priorityBadgeClasses[todo.priority]}`}>{todo.priority}</span></>
+                        
                       )}
                     </label>
                     <div className="flex items-center gap-3">

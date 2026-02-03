@@ -88,11 +88,6 @@ h1 {
   accent-color: #4f46e5;
 }
 
-.todo-item span {
-  flex: 1;
-  font-size: 0.98rem;
-  word-break: break-word;
-}
 
 @media (prefers-color-scheme: light) {
   :root {
