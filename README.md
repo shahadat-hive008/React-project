@@ -19,7 +19,7 @@ A simple and interactive Todo application built with **React**. This project all
 
 Insert a link to your live demo or screenshot here:
 
-![Todo App Screenshot](![alt text](image.png))
+![Screenshot](image.png)
 
 ---
 
