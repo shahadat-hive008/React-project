@@ -17,7 +17,6 @@ A simple and interactive Todo application built with **React**. This project all
 
 ## Demo
 
-Insert a link to your live demo or screenshot here:
 
 ![Screenshot](image.png)
 
@@ -69,6 +68,6 @@ npm start
 ## License
 
 
-If you want, I can also **create a shorter, visually appealing version with badges and a live demo section** that’s GitHub-ready. It will look more professional for your portfolio.  
+Shahadat Hossain 
 
 
