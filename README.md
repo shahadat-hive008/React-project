@@ -67,7 +67,7 @@ npm start
 ---
 ## License
 
+© 2026 Shahadat. This project is licensed under the MIT License.
 
-Shahadat Hossain 
 
 
