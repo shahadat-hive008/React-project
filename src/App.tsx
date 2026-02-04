@@ -1,102 +1,66 @@
-import { useEffect, useRef, useState } from "react";
-import { priorityBadgeClasses, type Todo, type todoFilter } from "./typescript/interface";
-import { buttonCommonClasses, actionButtonClasses } from "./customStyle/style";
+import { useMemo, useState } from "react";
+import { type ButtonConfig, type Todo, type todoFilter } from "./typescript/interface";
 import Button from "./components/Button";
-import { loadTodos } from "./utils/loadTodos";
-import { getInitialFilter, getInitialPriority } from "./utils/loadTodosFilter";
+import { useTodos } from "./hook/useTodos";
+import { useFilterTodo } from "./hook/useFilterTodo";
+import TodoItem from "./components/TodoItem";
+import FormComponent from "./components/FormComponent";
 
-const STORAGE_KEY = "react-play:simple-todo-app";
-const FILTER_KEY = `${STORAGE_KEY}:filter`;
-const PRIORITY_KEY = `${STORAGE_KEY}:priority`;
 
+ const STORAGE_KEY = "react-play:simple-todo-app";
+ const FILTER_KEY = `${STORAGE_KEY}:filter`;
+ const PRIORITY_KEY = `${STORAGE_KEY}:priority`;
 function App() {
-  //Input text
-  const [text, setText] = useState("");
-  //Select text 
-  const [priority, setPriority] = useState<Todo["priority"]>("low");
-  //todos save state
-  const [todos, setTodos] = useState<Todo[]>(() => loadTodos(STORAGE_KEY));
-  //Todos Priority
-  const [priorityFilter, setPriorityFilter] = useState<Todo['priority'] | "all">(() => getInitialPriority(PRIORITY_KEY));
-  //Todos filter State
-  const [filter, setFilter] = useState<todoFilter>(() =>  getInitialFilter(FILTER_KEY) );
+  //useTodo hook
+  const {
+    todos,
+    addTodo,
+    setCompleteTodo,
+    updateTodoText,
+    deleteTodo,
+    clearAll,
+    clearCompleted,
+    toggleAll,
+  } = useTodos(STORAGE_KEY);
 
-  //Edit Todos state
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editingText, setEditingText] = useState("");
-  const [editingOriginalText, setEditingOriginalText] = useState("");
-  const editInputRef = useRef<HTMLInputElement | null>(null);
-  const cancelEditref = useRef(false)
+  const { priorityFilter, setPriorityFilter, filter, setFilter, resetFilters } =
+    useFilterTodo(FILTER_KEY, PRIORITY_KEY);
+  /**
+   * FilteredTodos
+   * Filters the todos array based on the filter and createdAt.
+   * If the filter is "all", sorts by completed status first, then by createdAt.
+   * If the filter is not "all", sorts only by createdAt.
+   */
+  const filteredTodos = useMemo(() => {
+    return todos.filter((todo) => {
+      const statusMatch =
+        filter === "all"
+          ? true
+          : filter === "active"
+            ? !todo.completed
+            : todo.completed;
 
-  // Save todos in local Storage
+      const priorityMatch =
+        priorityFilter === "all" ? true : todo.priority === priorityFilter;
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
+      return statusMatch && priorityMatch;
+    });
+  }, [todos, filter, priorityFilter]);
 
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-  }, [todos]);
-
-  // save filter in local storage
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(FILTER_KEY, filter);
-  }, [filter]);
-
-   // save priorityin local storage
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(PRIORITY_KEY, priorityFilter);
-  }, [priorityFilter]);
-
-  //Click edit button will focus eidtInput
-  useEffect(() => {
-    if (editingId !== null) editInputRef.current?.focus();
-  }, [editingId]);
-
-  //Url params for filter
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const url = new URL(window.location.href);
-    url.searchParams.set("filter", filter);
-    url.searchParams.set("priority", priorityFilter);
-    window.history.replaceState({}, "", url.toString());
-  }, [filter, priorityFilter]);
-
-
-  //FilterTodos to show active or completed
-  const filteredTodos = todos.filter((todo) => {
-    let statusMatch = false;
-    let priorityMatch = false;
-
-    if (filter === "all") {
-      statusMatch = true;
-    } else if (filter === "active") {
-      statusMatch = !todo.completed;
-    } else if (filter === "completed") {
-      statusMatch = todo.completed;
-    }
-
-    if (priorityFilter === "all") {
-      priorityMatch = true;
-    } else {
-      priorityMatch = todo.priority === priorityFilter;
-    }
-
-    return statusMatch && priorityMatch;
-
-  });
-
-  //Sort todos that completed todos will appear in bottom
-  const sortedTodos = filteredTodos.slice().sort((a, b) => {
-    if (a.completed !== b.completed && filter === "all") {
-      return a.completed ? 1 : -1;
-    }
-
-    return b.createdAt - a.createdAt;
-  });
+  /**
+   * SortedTodos
+   * Sorts the filtered todos array based on the filter and createdAt.
+   * If the filter is "all", sorts by completed status first, then by createdAt.
+   * If the filter is not "all", sorts only by createdAt.
+   */
+  const sortedTodos = useMemo(() => {
+    return [...filteredTodos].sort((a, b) => {
+      if (filter === "all" && a.completed !== b.completed) {
+        return a.completed ? 1 : -1;
+      }
+      return b.createdAt - a.createdAt;
+    });
+  }, [filteredTodos, filter]);
 
   //Todos Count
   const remainingTodos = todos.filter((todo) => !todo.completed).length;
@@ -107,322 +71,147 @@ function App() {
   const hasCompletedTodos = completedTodos > 0;
   const allCompletd = hasTodos && remainingTodos === 0;
 
-  //Mark all complete or active todo
-  const toggleBtn = () => {
-    if (!hasTodos) return;
-    setTodos((prev) =>
-      prev.map((todo) => ({ ...todo, completed: !allCompletd })),
-    );
-  };
 
-  //Clear Completed todos
-  const clearCompleted = () => {
-    setTodos((prev) => prev.filter((todo) => !todo.completed));
-  };
+  /**
+   * An array of button config objects.
+   * Each object represents a button with a type, label, value, and optionally an onClick function and a disabled boolean.
+   */
+  const buttons: ButtonConfig[] = [
+  // Filters
+  { type: "filter", label: "All", value: "all" },
+  { type: "filter", label: "Active", value: "active" },
+  { type: "filter", label: "Completed", value: "completed" },
 
-  // Clear all Todos
-  const clearAll = () => {
-    setTodos([]);
-  };
-  //Form Submit
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const trimedText = text.trim();
-    const selectedPriority = priority;
-    
-    setTodos((prev) => [
-      {
-        id: Date.now(),
-        text: trimedText,
-        completed: false,
-        createdAt: Date.now(),
-        priority: selectedPriority
-      },
-      ...prev,
-    ]);
-    
-    setText("");
-    setPriority("low");
-  };
+  // Priority
+  { type: "priority", label: "High", value: "high" },
+  { type: "priority", label: "Medium", value: "medium" },
+  { type: "priority", label: "Low", value: "low" },
 
-  //complete todo action
-  const toggleTodo = (id: number) => {
-    setTodos((prev) => {
-      return prev.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo,
-      );
-    });
-  };
-
-  //Edit todo text
-  const startEditing = (id: number, text: string) => {
-    setEditingId(id);
-    setEditingText(text);
-    setEditingOriginalText(text);
-  };
-
-  //Save Edited text
-  const commitTodo = () => {
-    if (editingId === null) return;
-    const trimmedText = editingText.trim();
-    const todoText = trimmedText.length > 0 ? trimmedText : editingOriginalText;
-    setTodos((prev) => {
-      return prev.map((todo) =>
-        todo.id === editingId ? { ...todo, text: todoText } : todo,
-      );
-    });
-    setEditingId(null);
-    setEditingText("");
-    setEditingOriginalText("");
-  };
-
-  //Saved text by enter or escape key to cancel
-  const handleEditKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      commitTodo();
-    }
-
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      cancelEdit();
-    }
-  };
-
-  //Delete todo
-  const deleteTodo = (id: number) => {
-    setTodos((prev) => prev.filter((todo) => todo.id !== id));
-    if (editingId === id) {
-      setEditingId(null);
-      setEditingText("");
-      setEditingOriginalText("");
-    }
-  };
+  // Actions
+  {
+    type: "action",
+    label: allCompletd ? "Mark all active" : "Mark all complete",
+    onClick: () => toggleAll(!allCompletd),
+    disabled: !hasTodos,
+  },
+  {
+    type: "action",
+    label: "Clear completed",
+    onClick: clearCompleted,
+    disabled: !hasCompletedTodos,
+  },
+  {
+    type: "action",
+    label: "Clear all",
+    onClick: clearAll,
+    disabled: !hasTodos,
+  },
+  {
+    type: "action",
+    label: "Reset Filters",
+    onClick: resetFilters,
+    className: "bg-red-400 hover:bg-red-500 text-white px-4 py-2 rounded-sm",
+  },
+];
 
 
-  //Cancel edit
-  const cancelEdit = () =>{
-    cancelEditref.current= true;
-    setEditingId(null);
-    setEditingText("");
-    setEditingOriginalText("");
-
-    setTimeout(()=>{
-      cancelEditref.current = false
-    }, 0);
-  }
-
-
-  //Handle outside click to save 
- const handleEditBlur = () =>{
-  if(cancelEditref.current){
-    cancelEditref.current = false;
-    return;
-  }
-  commitTodo();
- }
-
- //reset filter
- const resetFilters = () => {
-  setFilter("all");
-  setPriorityFilter("all");
-  // Optional: remove from URL
-  if (typeof window !== "undefined") {
-    const url = new URL(window.location.href);
-    url.searchParams.delete("filter");
-    url.searchParams.delete("priority");
-    window.history.replaceState({}, "", url.toString());
-  }
-};
 
   return (
-    <>
-      <div className="p-4 flex flex-col justify-center items-center my-5">
-        <div className="flex flex-col justify-center items-center">
-          <h2 className="text-2xl">Simple Todo App</h2>
-          <p>
-            Track what needs to be tackled next. Add todos, toggle their
-            completion state, edit existing items, and quickly clear the
-            finished work.
-          </p>
-        </div>
-        <div className="max-w-150 mx-auto my-6 rounded-xl p-5 bg-linear-to-r from-gray-200 to-zinc-100 text-black">
-          <form className="flex items-center gap-3" onSubmit={handleSubmit}>
-            <input
-              className="flex-1 px-1 py-3 border border-indigo-200 focus:outline-none rounded-sm "
-              aria-label="Todo description"
-              placeholder="Add a new task..."
-              value={text}
-              required
-              onChange={(event) => setText(event.target.value)}
-            />
-            <select 
-            className="bg-indigo-200 px-2 py-4 rounded-sm focus:outline-none"
-            value={priority}
-            onChange={(e) => setPriority(e.target.value as Todo["priority"])} 
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-            <button className="bg-indigo-500 p-4 rounded-sm cursor-pointer text-white">
-              Add
-            </button>
-          </form>
+    <section
+      className="p-4 flex flex-col justify-center items-center my-5"
+      aria-label="Todo list app"
+    >
+      {/* heading */}
+      <div className="flex flex-col justify-center items-center">
+        <h2 className="text-2xl">Simple Todo App</h2>
+        <p>
+          Track what needs to be tackled next. Add todos, toggle their
+          completion state, edit existing items, and quickly clear the finished
+          work.
+        </p>
+      </div>
 
-          {/* To - Do toolbar */}
-          <div className="pt-4 flex flex-col gap-4.5">
-            {/* Status */}
-            <p className="flex items-center gap-2">
-              <span>
-                  {completionRate === 100
-                    ? "No task left"
-                    : `${remainingTodos} ${remainingTodos === 1 ? "task" : "tasks"} left`}
+      <div className="max-w-150 mx-auto my-6 rounded-xl p-5 bg-linear-to-r from-gray-200 to-zinc-100 text-black">
+        {/* Form component */}
+       <FormComponent onSubmit={addTodo}/>
+        {/* To - Do toolbar */}
+        <div className="pt-4 flex flex-col gap-4.5">
+
+          {/* component */}
+          <p className="flex items-center gap-2">
+            <span>
+              {completionRate === 100
+                ? "No task left"
+                : `${remainingTodos} ${remainingTodos === 1 ? "task" : "tasks"} left`}
+            </span>
+            {hasTodos && (
+              <span className="bg-indigo-300 rounded-2xl px-2 py-0.5 font-semibold">
+                {completionRate}% complete
               </span>
-              {hasTodos && (
-                <span className="bg-indigo-300 rounded-2xl px-2 py-0.5 font-semibold">
-                  {completionRate}% complete
-                </span>
-              )}
-            </p>
-            <div className="flex flex-wrap items-center gap-2">
-              {/* To do filter */}
-              <Button 
-               onClick={() => setFilter('all')}
-               pressed={filter === 'all'}
-              >
-                All
-              </Button>
-              <Button 
-               onClick={() => setFilter('active')}
-               pressed={filter === 'active'}
-              >
-                Active
-              </Button>
-              <Button 
-               onClick={() => setFilter('completed')}
-               pressed={filter === 'completed'}
-              >
-                Completed
-              </Button>
-              {/* Priority Based Filter */}
-              <Button 
-                onClick={() => setPriorityFilter("high")}
-                pressed={priorityFilter === "high"}
-              >
-                High
-              </Button>
-              <Button 
-                onClick={() => setPriorityFilter("medium")}
-                pressed={priorityFilter === "medium"}
-              >
-                Medium
-              </Button>
-              <Button 
-                onClick={() => setPriorityFilter("low")}
-                pressed={priorityFilter === "low"}  
-              >
-                Low
-              </Button>
-              {/* To do button action */}
-              <Button onClick={toggleBtn} disabled={!hasTodos} ariaDisabled={!hasTodos}>
-                  {allCompletd ? "Mark all active" : "Mark all complete"}
-              </Button>
-              <Button onClick={clearCompleted} disabled={!hasCompletedTodos} ariaDisabled={!hasCompletedTodos}>
-                  Clear completed
-              </Button>
-              <Button onClick={clearAll} disabled={!hasTodos} ariaDisabled={!hasTodos}>
-                  Clear all
-              </Button>
-              <Button
-                onClick={resetFilters}
-                className="bg-red-400 hover:bg-red-500 text-white px-4 py-2 rounded-sm"
-              >
-                Reset Filters
-              </Button>
+            )}
+          </p>
 
-            </div>
-            <ul className="flex flex-col gap-5">
-              {sortedTodos.length === 0 && (
-                <li className="px-4 py-3 bg-indigo-100 text-center font-semibold">Nothing to show here yet.</li>
-              )}
-              {sortedTodos.map((todo) => {
-                const isEditing = todo.id === editingId;
+          <div className="flex flex-wrap items-center gap-2">
+            
+            {buttons.map((button, index) => {
+              if (button.type === "filter") {
                 return (
-                  <li className="todo-item" key={todo.id}>
-                    <label className="todo-item-main">
-                      <input
-                        aria-label={
-                          todo.completed
-                            ? `Mark "${todo.text}" as active`
-                            : `Mark "${todo.text}" as done`
-                        }
-                        checked={todo.completed}
-                        type="checkbox"
-                        onChange={() => toggleTodo(todo.id)}
-                      />
-
-                      {isEditing ? (
-                        <input
-                          aria-label="Edit todo text"
-                          className="flex-1 px-1 py-1.5 border border-indigo-200 focus:outline-none rounded-sm "
-                          ref={editInputRef}
-                          value={editingText}
-                          onBlur={handleEditBlur}
-                          onChange={(event) =>
-                            setEditingText(event.target.value)
-                          }
-                          onKeyDown={handleEditKeyDown}
-                        />
-                      ) : ( 
-                        <><span>{todo.text}</span> <span className= {`px-2 py-1 rounded-full text-sm font-semibold capitalize ${priorityBadgeClasses[todo.priority]}`}>{todo.priority}</span></>
-                        
-                      )}
-                    </label>
-                    <div className="flex items-center gap-3">
-                      {isEditing ? (
-                        <>
-                          <Button
-                            className={`${buttonCommonClasses} ${actionButtonClasses}`}
-                            onClick={commitTodo}
-                            onMouseDown={(event) => event.preventDefault()}
-                          >
-                            Save
-                          </Button>
-                          <Button
-                            className={`${buttonCommonClasses} ${actionButtonClasses}`}
-                            onClick={cancelEdit}
-                            onMouseDown={(event) => event.preventDefault()}
-                          >
-                            Cancel
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <Button
-                            className={`${buttonCommonClasses} ${actionButtonClasses}`}
-                            onClick={() => startEditing(todo.id, todo.text)}
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            className={`${buttonCommonClasses} ${actionButtonClasses}`}
-                            aria-label="Delete todo"
-                            onClick={() => deleteTodo(todo.id)}
-                          >
-                            X
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </li>
+                  <Button
+                    key={index}
+                    onClick={() => setFilter(button.value)}
+                    pressed={filter === button.value}
+                  >
+                    {button.label}
+                  </Button>
                 );
-              })}
-            </ul>
+              }
+
+              if (button.type === "priority") {
+                return (
+                  <Button
+                    key={index}
+                    onClick={() => setPriorityFilter(button.value)}
+                    pressed={priorityFilter === button.value}
+                  >
+                    {button.label}
+                  </Button>
+                );
+              }
+
+              // action
+              return (
+                <Button
+                  key={index}
+                  onClick={button.onClick}
+                  disabled={button.disabled}
+                  ariaDisabled={button.disabled}
+                  className={button.className}
+                >
+                  {button.label}
+                </Button>
+              );
+            })}
+
           </div>
+          <ul className="flex flex-col gap-5">
+            {sortedTodos.length === 0 && (
+              <li className="px-4 py-3 bg-indigo-100 text-center font-semibold">
+                Nothing to show here yet.
+              </li>
+            )}
+            {sortedTodos.map((todo) => (
+              <TodoItem
+                key={todo.id}
+                todo={todo}
+                toggleTodo={setCompleteTodo}
+                updateTodo={updateTodoText}
+                deleteTodo={deleteTodo}
+              />
+            ))}
+          </ul>
         </div>
       </div>
-    </>
+    </section>
   );
 }
 

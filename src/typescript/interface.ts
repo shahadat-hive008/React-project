@@ -17,6 +17,7 @@ export const priorityBadgeClasses: Record<Todo["priority"], string> = {
 
 export type todoFilter = "all" | "active" | "completed";
 
+//Button component
 export interface ButtonProps {
   children?: React.ReactNode;
   onClick?: () => void;
@@ -27,3 +28,22 @@ export interface ButtonProps {
   ariaLabel?: string;
   onMouseDown?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
+
+export type ButtonConfig =
+  | {
+      type: "filter";
+      label: string;
+      value: todoFilter;
+    }
+  | {
+      type: "priority";
+      label: string;
+      value: Todo["priority"];
+    }
+  | {
+      type: "action";
+      label: string;
+      onClick: () => void;
+      disabled?: boolean;
+      className?: string;
+    };
