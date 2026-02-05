@@ -18,7 +18,7 @@ export function useTodos(storageKey: string) {
   }, [todos]);
 
   //Add todo in statw
-  const addTodo = (text: string, priority: Todo["priority"]) => {
+  const addTodo = (text: string, priority: Todo["priority"], dueDate?: number) => {
     setTodos((prev) => [
       {
         id: Date.now(),
@@ -26,6 +26,7 @@ export function useTodos(storageKey: string) {
         completed: false,
         createdAt: Date.now(),
         priority,
+        dueDate
       },
       ...prev,
     ]);
@@ -41,9 +42,9 @@ export function useTodos(storageKey: string) {
   };
 
   //Edit todo text
-  const updateTodoText = (id: number, text: string) => {
+  const updateTodoText = (id: number, text: string, dueDate?: number) => {
     setTodos((prev) => {
-      return prev.map((todo) => (todo.id === id ? { ...todo, text } : todo));
+      return prev.map((todo) => (todo.id === id ? { ...todo, text, dueDate } : todo));
     });
   };
 

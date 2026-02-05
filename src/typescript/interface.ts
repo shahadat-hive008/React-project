@@ -5,7 +5,8 @@ export interface Todo {
     text: string,
     completed: boolean,
     createdAt: number,
-    priority: "high" | "medium" | "low"
+    priority: "high" | "medium" | "low",
+    dueDate?: number,
 }
 
 export const priorityBadgeClasses: Record<Todo["priority"], string> = {

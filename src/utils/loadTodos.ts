@@ -34,7 +34,9 @@ export function loadTodos(storageKey: string): Todo[] {
           todo.priority === "medium" ||
           todo.priority === "high"
             ? todo.priority
-            : "low", // fallback
+            : "low" // fallback
+            ,
+        dueDate: todo.dueDate
       }))
       .filter((todo) => todo.text.length > 0);
 

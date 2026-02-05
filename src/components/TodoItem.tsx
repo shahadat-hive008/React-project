@@ -1,12 +1,13 @@
-import { useState, useRef, useEffect } from "react";
 import { buttonCommonClasses, actionButtonClasses } from "../customStyle/style";
 import { priorityBadgeClasses, type Todo } from "../typescript/interface";
 import Button from "./Button";
+import { useEditableTodo } from "../hook/useEditableTodo";
+import DatePicker from "react-datepicker";
 
 type TodoItemProps = {
   todo: Todo;
   toggleTodo: (id: number) => void;
-  updateTodo: (id: number, text: string) => void;
+  updateTodo: (id: number, text: string, dueDate?: number) => void;
   deleteTodo: (id: number) => void;
 };
 
@@ -16,74 +17,28 @@ export default function TodoItem({
   updateTodo,
   deleteTodo,
 }: TodoItemProps) {
-  //Edit Todos state
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editingText, setEditingText] = useState("");
-  const [editingOriginalText, setEditingOriginalText] = useState("");
-  const editInputRef = useRef<HTMLInputElement | null>(null);
-  const cancelEditref = useRef(false);
+  const {
+    isEditing,
+    editInputRef,
+    editingText,
+    setEditingText,
+    commitTodoText,
+    cancelEdit,
+    startEditing,
+    editingDueDate,
+    setEditingDueDate,
+  } = useEditableTodo(todo.text, todo.dueDate);
 
-  //Click edit button will focus eidtInput
-  useEffect(() => {
-    if (editingId !== null) editInputRef.current?.focus();
-  }, [editingId]);
-
-  //Edit todo text
-  const startEditing = (id: number, text: string) => {
-    setEditingId(id);
-    setEditingText(text);
-    setEditingOriginalText(text);
-    setIsEditing(true);
-  };
-
-  //Save Edited text
-  const commitTodo = () => {
-    if (editingId === null) return;
-    const trimmedText = editingText.trim();
-    const todoText = trimmedText.length > 0 ? trimmedText : editingOriginalText;
-    updateTodo(editingId, todoText);
-    setEditingId(null);
-    setEditingText("");
-    setEditingOriginalText("");
-    setIsEditing(false);
-  };
-
-  //Saved text by enter or escape key to cancel
+  // This function handle enter and esc key to svae and cancel todo
   const handleEditKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      commitTodo();
-    }
+    if (event.key === "Enter") commitTodoText((v, dueDate) => updateTodo(todo.id, v, dueDate));
 
-    if (event.key === "Escape") {
-      event.preventDefault();
-      cancelEdit();
-    }
+    if (event.key === "Escape") cancelEdit();
   };
 
-  //Cancel edit
-  const cancelEdit = () => {
-    cancelEditref.current = true;
-    setEditingId(null);
-    setEditingText("");
-    setIsEditing(false);
-    setTimeout(() => {
-      cancelEditref.current = false;
-    }, 0);
-  };
-
-  //Handle outside click to save
-  const handleEditBlur = () => {
-    if (cancelEditref.current) {
-      cancelEditref.current = false;
-      return;
-    }
-    commitTodo();
-  };
   return (
     <li className="todo-item">
-      <label className="todo-item-main">
+      <label>
         <input
           aria-label={
             todo.completed
@@ -94,40 +49,59 @@ export default function TodoItem({
           type="checkbox"
           onChange={() => toggleTodo(todo.id)}
         />
+        </label>
 
         {isEditing ? (
-          <input
-            aria-label="Edit todo text"
-            className="flex-1 px-1 py-1.5 border border-indigo-200 focus:outline-none rounded-sm "
-            ref={editInputRef}
-            value={editingText}
-            onBlur={handleEditBlur}
-            onChange={(event) => setEditingText(event.target.value)}
-            onKeyDown={handleEditKeyDown}
-          />
-        ) : (
           <>
+            <input
+              aria-label="Edit todo text"
+              className="flex-1 px-1 py-1.5 border border-indigo-200 focus:outline-none rounded-sm "
+              ref={editInputRef}
+              value={editingText}
+              // onBlur={() => handleBlur((v, dueDate) => updateTodo(todo.id, v, dueDate))}
+              onChange={(event) => setEditingText(event.target.value)}
+              onKeyDown={handleEditKeyDown}
+            />
+            <div  onClick={(e) => e.stopPropagation()} className="flex items-center gap-0.5">
+              <DatePicker
+                className="border border-indigo-200 pointer-none:"
+                showIcon
+                selected={editingDueDate}
+                onChange={setEditingDueDate}
+                dateFormat="dd/MM/yyyy"
+              />
+            </div>
+          </>
+        ) : (
+          <div className="flex-3 flex items-center justify-evenly gap-3">
             <span
-                className={`${
-                    todo.completed ? "line-through text-gray-400" : ""
-                }`}
-                >
-                {todo.text}
-                </span>{" "}
+              className={`${
+                todo.completed ? "line-through text-gray-400" : ""
+              }wrap-break-word`}
+            >
+              {todo.text}
+            </span>{" "}
             <span
               className={`px-2 py-1 rounded-full text-sm font-semibold capitalize ${priorityBadgeClasses[todo.priority]}`}
             >
               {todo.priority}
             </span>
-          </>
+            {todo.dueDate && (
+              <span className="bg-indigo-200 p-2 rounded-full text-sm font-semibold wrap-normal">
+                {new Date(todo.dueDate).toLocaleDateString()}
+              </span>
+            )}
+          </div>
         )}
-      </label>
-      <div className="flex items-center gap-3">
+      
+      <div className="flex items-center gap-3 flex-1 justify-end">
         {isEditing ? (
           <>
             <Button
               className={`${buttonCommonClasses} ${actionButtonClasses}`}
-              onClick={commitTodo}
+              onClick={() =>
+                commitTodoText((value, dueDate) => updateTodo(todo.id, value, dueDate))
+              }
               onMouseDown={(event) => event.preventDefault()}
             >
               Save
@@ -144,7 +118,7 @@ export default function TodoItem({
           <>
             <Button
               className={`${buttonCommonClasses} ${actionButtonClasses}`}
-              onClick={() => startEditing(todo.id, todo.text)}
+              onClick={startEditing}
             >
               Edit
             </Button>

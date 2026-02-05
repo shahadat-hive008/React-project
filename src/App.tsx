@@ -1,10 +1,12 @@
-import { useMemo, useState } from "react";
-import { type ButtonConfig, type Todo, type todoFilter } from "./typescript/interface";
+import { useMemo } from "react";
+import { type ButtonConfig  } from "./typescript/interface";
 import Button from "./components/Button";
 import { useTodos } from "./hook/useTodos";
 import { useFilterTodo } from "./hook/useFilterTodo";
 import TodoItem from "./components/TodoItem";
 import FormComponent from "./components/FormComponent";
+import TodoTable from "./components/TodoTable";
+import { Margin, usePDF } from "react-to-pdf";
 
 
  const STORAGE_KEY = "react-play:simple-todo-app";
@@ -25,6 +27,11 @@ function App() {
 
   const { priorityFilter, setPriorityFilter, filter, setFilter, resetFilters } =
     useFilterTodo(FILTER_KEY, PRIORITY_KEY);
+
+     const { toPDF, targetRef } = usePDF({
+        filename: 'use-pdf-example.pdf',
+        page: { margin: Margin.MEDIUM, orientation: 'landscape' },
+      });
   /**
    * FilteredTodos
    * Filters the todos array based on the filter and createdAt.
@@ -131,7 +138,7 @@ function App() {
         </p>
       </div>
 
-      <div className="max-w-150 mx-auto my-6 rounded-xl p-5 bg-linear-to-r from-gray-200 to-zinc-100 text-black">
+      <div className="max-w-180 mx-auto my-6 rounded-xl p-5 bg-linear-to-r from-gray-200 to-zinc-100 text-black">
         {/* Form component */}
        <FormComponent onSubmit={addTodo}/>
         {/* To - Do toolbar */}
@@ -210,6 +217,21 @@ function App() {
             ))}
           </ul>
         </div>
+      </div>
+      <div>
+        <button className="px-3 py-2 border-none bg-red-400 cursor-pointer rounded-sm" onClick={() => toPDF()}>Generate PDF</button>
+      <div  ref={targetRef}
+  style={{
+    position: "absolute",
+    left: "-9999px",
+    width: "1200px",
+    padding: "24px",
+    background: "white",
+    color: "#000000",
+    textAlign: "left",
+  }}>
+        <TodoTable todos= {todos}/>
+      </div>
       </div>
     </section>
   );

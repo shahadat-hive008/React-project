@@ -1,31 +1,37 @@
+
 import { useState } from "react";
 import type { Todo } from "../typescript/interface";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 type formHandleProp = {
-    onSubmit : (text:string ,priority : Todo["priority"]) => void;
+    onSubmit : (text:string ,priority : Todo["priority"], dueDate : Todo["dueDate"]) => void;
 }
 export default function FormComponent({onSubmit}:formHandleProp) {
    //Input text
   const [text, setText] = useState("");
   //Select text
   const [priority, setPriority] = useState<Todo["priority"]>("low");
+  //Due Date
+   const [selectedDate, setSelectedDate] = useState< Date | null>(new Date());
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimedText = text.trim();
     const selectedPriority = priority;
-
+    const dueDate = selectedDate;
+    console.log(dueDate);
     if (trimedText.length > 0) {
-      onSubmit(trimedText, selectedPriority);
+      onSubmit(trimedText, selectedPriority, Number(dueDate));
     }
 
     setText("");
     setPriority("low");
   };
   return (
-    <form className="flex items-center gap-3" onSubmit={handleSubmit}>
+    <form className="grid grid-cols-2 items-center gap-3 " onSubmit={handleSubmit}>
           <input
-            className="flex-1 px-1 py-3 border border-indigo-200 focus:outline-none rounded-sm "
+            className="col-span-2 px-1 py-3 border border-indigo-200 focus:outline-none rounded-sm "
             aria-label="Todo description"
             placeholder="Add a new task..."
             value={text}
@@ -41,7 +47,12 @@ export default function FormComponent({onSubmit}:formHandleProp) {
             <option value="medium">Medium</option>
             <option value="high">High</option>
           </select>
-          <button className="bg-indigo-500 p-4 rounded-sm cursor-pointer text-white">
+
+          <div className="flex items-center gap-0.5">
+            <span className="font-semibold text-sm">Due Date: </span>
+            <DatePicker className="border border-indigo-200" showIcon selected={selectedDate} onChange={setSelectedDate} dateFormat="dd/MM/yyyy" />
+          </div>
+          <button className="col-span-2 bg-indigo-500 p-4 rounded-sm cursor-pointer text-white">
             Add
           </button>
         </form>

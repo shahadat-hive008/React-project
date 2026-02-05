@@ -57,8 +57,8 @@ h1 {
 
 
 .todo-item {
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 0.75rem;
   padding: 0.85rem 1rem;
@@ -74,18 +74,11 @@ h1 {
 }
 
 
-.todo-item-main {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  cursor: pointer;
-  width: 100%;
-}
-
 .todo-item input[type='checkbox'] {
   width: 20px;
   height: 20px;
   accent-color: #4f46e5;
+  cursor: pointer;
 }
 
 
