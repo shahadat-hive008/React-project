@@ -1,5 +1,5 @@
 import type { Todo, todoFilter } from "../typescript/interface";
-
+//all, active, completed filter optiom
 export const getInitialFilter = (storageKey: string): todoFilter => {
   if (typeof window === "undefined") return "all";
   const stored = window.localStorage.getItem(storageKey);

@@ -1,6 +1,13 @@
 import type { Todo } from "../typescript/interface";
 import { seededData } from "../data/fake-data";
 
+
+
+/**
+ * Loads todos from local storage if available, else returns seeded data.
+ * @param {string} storageKey - Key to use for saving todos to local storage.
+ * @returns {Todo[]} - An array of todos.
+ */
 export function loadTodos(storageKey: string): Todo[] {
   // Check whether run server or browser
   if (typeof window === "undefined") return seededData;

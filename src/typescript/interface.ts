@@ -30,18 +30,7 @@ export interface ButtonProps {
   onMouseDown?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-export type ButtonConfig =
-  | {
-      type: "filter";
-      label: string;
-      value: todoFilter;
-    }
-  | {
-      type: "priority";
-      label: string;
-      value: Todo["priority"];
-    }
-  | {
+export type ButtonConfig ={
       type: "action";
       label: string;
       onClick: () => void;

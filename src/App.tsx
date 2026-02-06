@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { type ButtonConfig  } from "./typescript/interface";
+import { type ButtonConfig, type Todo, type todoFilter  } from "./typescript/interface";
 import Button from "./components/Button";
 import { useTodos } from "./hook/useTodos";
 import { useFilterTodo } from "./hook/useFilterTodo";
@@ -84,16 +84,6 @@ function App() {
    * Each object represents a button with a type, label, value, and optionally an onClick function and a disabled boolean.
    */
   const buttons: ButtonConfig[] = [
-  // Filters
-  { type: "filter", label: "All", value: "all" },
-  { type: "filter", label: "Active", value: "active" },
-  { type: "filter", label: "Completed", value: "completed" },
-
-  // Priority
-  { type: "priority", label: "High", value: "high" },
-  { type: "priority", label: "Medium", value: "medium" },
-  { type: "priority", label: "Low", value: "low" },
-
   // Actions
   {
     type: "action",
@@ -138,7 +128,7 @@ function App() {
         </p>
       </div>
 
-      <div className="max-w-180 mx-auto my-6 rounded-xl p-5 bg-linear-to-r from-gray-200 to-zinc-100 text-black">
+      <div className="max-w-181 mx-auto my-6 rounded-xl p-6 bg-linear-to-r from-gray-200 to-zinc-100 text-black">
         {/* Form component */}
        <FormComponent onSubmit={addTodo}/>
         {/* To - Do toolbar */}
@@ -157,47 +147,44 @@ function App() {
               </span>
             )}
           </p>
-
-          <div className="flex flex-wrap items-center gap-2">
-            
-            {buttons.map((button, index) => {
-              if (button.type === "filter") {
-                return (
-                  <Button
-                    key={index}
-                    onClick={() => setFilter(button.value)}
-                    pressed={filter === button.value}
-                  >
-                    {button.label}
-                  </Button>
-                );
-              }
-
-              if (button.type === "priority") {
-                return (
-                  <Button
-                    key={index}
-                    onClick={() => setPriorityFilter(button.value)}
-                    pressed={priorityFilter === button.value}
-                  >
-                    {button.label}
-                  </Button>
-                );
-              }
-
-              // action
-              return (
-                <Button
-                  key={index}
-                  onClick={button.onClick}
-                  disabled={button.disabled}
-                  ariaDisabled={button.disabled}
-                  className={button.className}
+            {/* FIlter by select dropdown */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-2">
+                <select
+                className="flex-1 bg-indigo-200 px-2 py-4 rounded-sm focus:outline-none"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value as todoFilter)}
                 >
-                  {button.label}
-                </Button>
-              );
-            })}
+                  <option value="all">All</option>
+                  <option value="active">Active</option>
+                  <option value="completed">completed</option>
+                </select>
+                <select
+                  className="flex-1 bg-indigo-200 px-2 py-4 rounded-sm focus:outline-none"
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value as Todo["priority"])}
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+            </div>
+            {/* Action buttons */}
+            <div className="flex flex-wrap items-center gap-2">
+              {buttons.map((button, index) => {
+                return (
+                  <Button
+                    key={index}
+                    onClick={button.onClick}
+                    disabled={button.disabled}
+                    ariaDisabled={button.disabled}
+                    className={button.className}
+                  >
+                    {button.label}
+                  </Button>
+                  );
+                })}
+            </div>
 
           </div>
           <ul className="flex flex-col gap-5">
@@ -218,18 +205,19 @@ function App() {
           </ul>
         </div>
       </div>
+      {/* Generate PDF */}
       <div>
         <button className="px-3 py-2 border-none bg-red-400 cursor-pointer rounded-sm" onClick={() => toPDF()}>Generate PDF</button>
       <div  ref={targetRef}
-  style={{
-    position: "absolute",
-    left: "-9999px",
-    width: "1200px",
-    padding: "24px",
-    background: "white",
-    color: "#000000",
-    textAlign: "left",
-  }}>
+            style={{
+              position: "absolute",
+              left: "-9999px",
+              width: "1200px",
+              padding: "24px",
+              background: "white",
+              color: "#000000",
+              textAlign: "left",
+            }}>
         <TodoTable todos= {todos}/>
       </div>
       </div>
