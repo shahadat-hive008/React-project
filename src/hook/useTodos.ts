@@ -5,8 +5,7 @@ import { loadTodos } from "../utils/loadTodos";
 /**
  * useTodos hook, managing todos state and saving to local storage.
  * Returns an object containing todos state, setTodos, addTodo, setCompleteTodo, updateTodoText, deleteTodo, clearAll, clearCompleted, and toggleAll functions.
- * @param {string} storageKey - Key to use for saving todos to local storage.
- * @return {Object} - An object containing todos state, setTodos, addTodo, setCompleteTodo, updateTodoText, deleteTodo, clearAll, clearCompleted, and toggleAll functions.
+ *  deleteTodo, clearAll, clearCompleted, and toggleAll functions.
  */
 export function useTodos(storageKey: string) {
   //todos save state
