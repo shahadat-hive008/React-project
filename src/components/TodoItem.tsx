@@ -58,7 +58,6 @@ export default function TodoItem({
               className="flex-1 px-1 py-1.5 border border-indigo-200 focus:outline-none rounded-sm "
               ref={editInputRef}
               value={editingText}
-              // onBlur={() => handleBlur((v, dueDate) => updateTodo(todo.id, v, dueDate))}
               onChange={(event) => setEditingText(event.target.value)}
               onKeyDown={handleEditKeyDown}
             />

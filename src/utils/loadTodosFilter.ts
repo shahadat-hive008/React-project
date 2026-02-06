@@ -1,5 +1,9 @@
 import type { Todo, todoFilter } from "../typescript/interface";
-//all, active, completed filter optiom
+
+/**
+ * Returns the initial filter value from local storage.
+ * If no value is found, or if the value is not "all", "active", or "completed", returns "all".
+ */
 export const getInitialFilter = (storageKey: string): todoFilter => {
   if (typeof window === "undefined") return "all";
   const stored = window.localStorage.getItem(storageKey);
@@ -12,9 +16,12 @@ export const getInitialFilter = (storageKey: string): todoFilter => {
   return "all"; 
 };
 
-// utils/loadTodos Priority Filter
 
 
+/**
+ * Returns the initial priority value from local storage.
+ * If no value is found, or if the value is not "low", "medium", "high" initially returns "all".
+ */
 export const getInitialPriority = (storageKey: string): Todo["priority"] | "all" => {
   if (typeof window === "undefined") return "all";
   const stored = window.localStorage.getItem(storageKey);

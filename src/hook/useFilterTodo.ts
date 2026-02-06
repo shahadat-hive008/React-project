@@ -3,6 +3,10 @@ import type { Todo, todoFilter } from "../typescript/interface";
 import { getInitialFilter, getInitialPriority } from "../utils/loadTodosFilter";
 
 
+/**
+ * useFilterTodo hook, managing todos filter and priority state and saving to local storage.
+ * Returns an object containing todos priority filter state, setPriorityFilter, todos filter state, setFilter, and resetFilters functions.state, setFilter, and resetFilters functions.
+ */
 export function useFilterTodo(filterKey: string, priorityKey: string) {
   //Todos Priority
   const [priorityFilter, setPriorityFilter] = useState<Todo["priority"] | "all">(() => getInitialPriority(priorityKey));

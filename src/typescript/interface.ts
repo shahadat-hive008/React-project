@@ -1,5 +1,4 @@
-
-
+//Todo interface
 export interface Todo {
     id: number,
     text: string,
@@ -9,6 +8,7 @@ export interface Todo {
     dueDate?: number,
 }
 
+//For priority css design
 export const priorityBadgeClasses: Record<Todo["priority"], string> = {
   high: "bg-red-100 text-red-700",
   medium: "bg-green-100 text-green-700",
@@ -18,7 +18,7 @@ export const priorityBadgeClasses: Record<Todo["priority"], string> = {
 
 export type todoFilter = "all" | "active" | "completed";
 
-//Button component
+//Main Button component
 export interface ButtonProps {
   children?: React.ReactNode;
   onClick?: () => void;
@@ -30,6 +30,7 @@ export interface ButtonProps {
   onMouseDown?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
+//In App page show button action using object
 export type ButtonConfig ={
       type: "action";
       label: string;

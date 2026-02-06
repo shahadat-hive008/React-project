@@ -5,8 +5,7 @@ import { seededData } from "../data/fake-data";
 
 /**
  * Loads todos from local storage if available, else returns seeded data.
- * @param {string} storageKey - Key to use for saving todos to local storage.
- * @returns {Todo[]} - An array of todos.
+ * Also narrow types to only Partial<Todo> & Required<Pick<Todo, 'text'>>
  */
 export function loadTodos(storageKey: string): Todo[] {
   // Check whether run server or browser

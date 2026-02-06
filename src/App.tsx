@@ -187,6 +187,7 @@ function App() {
             </div>
 
           </div>
+          {/* Show list of todo items */}
           <ul className="flex flex-col gap-5">
             {sortedTodos.length === 0 && (
               <li className="px-4 py-3 bg-indigo-100 text-center font-semibold">
