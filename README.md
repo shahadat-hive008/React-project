@@ -29,7 +29,8 @@ A simple and interactive Todo application built with **React**. This project all
 - Mark tasks as completed
 - Persist tasks in `localStorage`
 - Responsive UI
-- Optional: Filter tasks (All / Completed / Pending)
+- Filter dropdown
+- Generate pdf formate
 
 ---
 
