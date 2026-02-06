@@ -18,7 +18,7 @@ A simple and interactive Todo application built with **React**. This project all
 ## Demo
 
 
-![Screenshot](image.png)
+![screen shot ](image-1.png)
 
 ---
 
