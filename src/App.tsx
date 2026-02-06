@@ -8,7 +8,7 @@ import FormComponent from "./components/FormComponent";
 import TodoTable from "./components/TodoTable";
 import { Margin, usePDF } from "react-to-pdf";
 
-
+//localstorage name
  const STORAGE_KEY = "react-play:simple-todo-app";
  const FILTER_KEY = `${STORAGE_KEY}:filter`;
  const PRIORITY_KEY = `${STORAGE_KEY}:priority`;
@@ -28,6 +28,7 @@ function App() {
   const { priorityFilter, setPriorityFilter, filter, setFilter, resetFilters } =
     useFilterTodo(FILTER_KEY, PRIORITY_KEY);
 
+    //Generate pdf built in hook
      const { toPDF, targetRef } = usePDF({
         filename: 'use-pdf-example.pdf',
         page: { margin: Margin.MEDIUM, orientation: 'landscape' },
@@ -35,8 +36,6 @@ function App() {
   /**
    * FilteredTodos
    * Filters the todos array based on the filter and createdAt.
-   * If the filter is "all", sorts by completed status first, then by createdAt.
-   * If the filter is not "all", sorts only by createdAt.
    */
   const filteredTodos = useMemo(() => {
     return todos.filter((todo) => {
