@@ -4,6 +4,8 @@ A simple and interactive Todo application built with **React**. This project all
 
 ---
 
+Tst purpose
+
 ## Table of Contents
 
 - [Demo](#demo)
@@ -16,7 +18,6 @@ A simple and interactive Todo application built with **React**. This project all
 ---
 
 ## Demo
-
 
 ![screen shot ](image-1.png)
 
@@ -53,9 +54,11 @@ Make sure you have **Node.js** and **npm** installed:
 node -v
 npm -v
 ```
+
 ---
 
 ## Installation
+
 ```bash
 git clone https://github.com/shahadat-hive008/React-project.git
 
@@ -65,10 +68,9 @@ npm install
 
 npm start
 ```
+
 ---
+
 ## License
 
 © 2026 Shahadat. This project is licensed under the MIT License.
-
-
-
