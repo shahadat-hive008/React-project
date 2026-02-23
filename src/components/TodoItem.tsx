@@ -1,6 +1,5 @@
 import {
   priorityBadgeClasses,
-  type Todo,
   type TodoItemProps,
 } from "../typescript/interface";
 import Button from "./Button";
