@@ -3,8 +3,8 @@ import type { Todo } from "../typescript/interface";
 import { loadTodos } from "../utils/loadTodos";
 
 /**
- * useTodos hook, managing todos state and saving to local storage.
- * Returns an object containing todos state, setTodos, addTodo, setCompleteTodo, updateTodoText, deleteTodo, clearAll, clearCompleted, and toggleAll functions.
+ * useTodos hook, managing todos state, addTodo function, setCompleteTodo, updateTodoText, deleteTodo in the list, clear all the todos, clear completed todos and saving todos into local storage.
+ * @Returns an object containing todos state, setTodos, addTodo, setCompleteTodo, updateTodoText, deleteTodo, clearAll, clearCompleted, and toggleAll functions.
  *  deleteTodo, clearAll, clearCompleted, and toggleAll functions.
  */
 export function useTodos(storageKey: string) {
@@ -17,7 +17,11 @@ export function useTodos(storageKey: string) {
   }, [todos]);
 
   //Add todo in statw
-  const addTodo = (text: string, priority: Todo["priority"], dueDate?: number) => {
+  const addTodo = (
+    text: string,
+    priority: Todo["priority"],
+    dueDate?: number,
+  ) => {
     setTodos((prev) => [
       {
         id: Date.now(),
@@ -25,7 +29,7 @@ export function useTodos(storageKey: string) {
         completed: false,
         createdAt: Date.now(),
         priority,
-        dueDate
+        dueDate,
       },
       ...prev,
     ]);
@@ -43,7 +47,9 @@ export function useTodos(storageKey: string) {
   //Edit todo text
   const updateTodoText = (id: number, text: string, dueDate?: number) => {
     setTodos((prev) => {
-      return prev.map((todo) => (todo.id === id ? { ...todo, text, dueDate } : todo));
+      return prev.map((todo) =>
+        todo.id === id ? { ...todo, text, dueDate } : todo,
+      );
     });
   };
 
@@ -64,10 +70,10 @@ export function useTodos(storageKey: string) {
 
   //Mark all complete or active todo
   const toggleAll = (completed: boolean) => {
-    setTodos(prev => prev.map(t => ({ ...t, completed })));
+    setTodos((prev) => prev.map((t) => ({ ...t, completed })));
   };
 
-  return{
+  return {
     todos,
     setTodos,
     addTodo,
@@ -76,6 +82,6 @@ export function useTodos(storageKey: string) {
     deleteTodo,
     clearAll,
     clearCompleted,
-    toggleAll
+    toggleAll,
   };
 }

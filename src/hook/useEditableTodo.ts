@@ -1,11 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 
 /**
- * Custom hook for managing editable todo item state
- *
+ * This custom hook that returns an object containing the state and functions to edit a todo.
  * This hook manages the editing state, text, and due date for a todo item.
- * It handles focus management, edit state tracking, and provides methods for
- * starting, canceling, and committing edits.
  */
 export function useEditableTodo(initialText: string, initialDueDate?: number) {
   const [isEditing, setIsEditing] = useState(false);

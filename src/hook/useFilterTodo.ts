@@ -1,21 +1,22 @@
 import { useEffect, useState } from "react";
-import type { Todo, todoFilter } from "../typescript/interface";
+import type { Todo, TodoFilter } from "../typescript/interface";
 import { getInitialFilter, getInitialPriority } from "../utils/loadTodosFilter";
-
 
 /**
  * useFilterTodo hook, managing todos filter and priority state and saving to local storage.
- * Returns an object containing todos priority filter state, setPriorityFilter, todos filter state, setFilter, and resetFilters functions.state, setFilter, and resetFilters functions.
+ * @Returns an object containing todos priority filter state, setPriorityFilter, todos filter state, setFilter, and resetFilters functions and todos filter state, setFilter, and resetFilters functions.
  */
 export function useFilterTodo(filterKey: string, priorityKey: string) {
   //Todos Priority
-  const [priorityFilter, setPriorityFilter] = useState<Todo["priority"] | "all">(() => getInitialPriority(priorityKey));
+  const [priorityFilter, setPriorityFilter] = useState<
+    Todo["priority"] | "all"
+  >(() => getInitialPriority(priorityKey));
   //Todos filter State
-  const [filter, setFilter] = useState<todoFilter>(() =>
+  const [filter, setFilter] = useState<TodoFilter>(() =>
     getInitialFilter(filterKey),
   );
 
-   // save filter and priority in local storage
+  // save filter and priority in local storage
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(filterKey, filter);
@@ -28,17 +29,17 @@ export function useFilterTodo(filterKey: string, priorityKey: string) {
   }, [filter, priorityFilter]);
 
   //reset filter
-    const resetFilters = () => {
+  const resetFilters = () => {
     setFilter("all");
     setPriorityFilter("all");
     // Optional: remove from URL
     if (typeof window !== "undefined") {
-        const url = new URL(window.location.href);
-        url.searchParams.delete("filter");
-        url.searchParams.delete("priority");
-        window.history.replaceState({}, "", url.toString());
+      const url = new URL(window.location.href);
+      url.searchParams.delete("filter");
+      url.searchParams.delete("priority");
+      window.history.replaceState({}, "", url.toString());
     }
-    };
+  };
   return {
     priorityFilter,
     setPriorityFilter,
