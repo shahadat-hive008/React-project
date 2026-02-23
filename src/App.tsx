@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import {
   type ButtonConfig,
   type Todo,
-  type todoFilter,
+  type TodoFilter,
 } from "./typescript/interface";
 import Button from "./components/Button";
 import { useTodos } from "./hook/useTodos";
@@ -34,7 +34,7 @@ function App() {
 
   //Generate pdf built in hook
   const { toPDF, targetRef } = usePDF({
-    filename: "use-pdf-example.pdf",
+    filename: "todos.pdf",
     page: { margin: Margin.MEDIUM, orientation: "landscape" },
   });
   /**
@@ -152,7 +152,7 @@ function App() {
               <select
                 className="flex-1 bg-indigo-200 px-2 py-4 rounded-sm focus:outline-none"
                 value={filter}
-                onChange={(e) => setFilter(e.target.value as todoFilter)}
+                onChange={(e) => setFilter(e.target.value as TodoFilter)}
               >
                 <option value="all">All</option>
                 <option value="active">Active</option>

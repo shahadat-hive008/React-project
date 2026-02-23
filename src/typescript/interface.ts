@@ -31,7 +31,7 @@ export type ButtonConfig = {
   className?: string;
 };
 
-//Form component props
+//TodoForm component props
 export interface formHandleProp {
   onSubmit: (
     text: string,

@@ -1,10 +1,8 @@
 import type { Todo } from "../typescript/interface";
 import { seededData } from "../data/fake-data";
 
-
-
 /**
- * Loads todos from local storage if available, else returns seeded data.
+ * Loads todos from local storage if available, else returns seeded means default data.
  * Also narrow types to only Partial<Todo> & Required<Pick<Todo, 'text'>>
  */
 export function loadTodos(storageKey: string): Todo[] {
@@ -40,9 +38,8 @@ export function loadTodos(storageKey: string): Todo[] {
           todo.priority === "medium" ||
           todo.priority === "high"
             ? todo.priority
-            : "low"
-            ,
-        dueDate: todo.dueDate
+            : "low",
+        dueDate: todo.dueDate,
       }))
       .filter((todo) => todo.text.length > 0);
 
