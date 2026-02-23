@@ -1,8 +1,5 @@
-import type { Todo } from "../typescript/interface";
+import type { TodoTableProps } from "../typescript/interface";
 
-interface TodoTableProps {
-  todos: Todo[];
-}
 export default function TodoTable({ todos }: TodoTableProps) {
   return (
     <table style={{ width: "100%", borderCollapse: "collapse" }}>

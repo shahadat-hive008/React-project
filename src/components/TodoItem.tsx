@@ -1,15 +1,12 @@
-import { priorityBadgeClasses, type Todo } from "../typescript/interface";
+import {
+  priorityBadgeClasses,
+  type Todo,
+  type TodoItemProps,
+} from "../typescript/interface";
 import Button from "./Button";
 import { useEditableTodo } from "../hook/useEditableTodo";
 import DatePicker from "react-datepicker";
 import { actionButtonClasses, buttonCommonClasses } from "../customStyle/style";
-
-type TodoItemProps = {
-  todo: Todo;
-  toggleTodo: (id: number) => void;
-  updateTodo: (id: number, text: string, dueDate?: number) => void;
-  deleteTodo: (id: number) => void;
-};
 
 export default function TodoItem({
   todo,

@@ -1,15 +1,8 @@
 import { useState } from "react";
-import type { Todo } from "../typescript/interface";
+import type { formHandleProp, Todo } from "../typescript/interface";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-type formHandleProp = {
-  onSubmit: (
-    text: string,
-    priority: Todo["priority"],
-    dueDate: Todo["dueDate"],
-  ) => void;
-};
 export default function FormComponent({ onSubmit }: formHandleProp) {
   //Input text
   const [text, setText] = useState("");
