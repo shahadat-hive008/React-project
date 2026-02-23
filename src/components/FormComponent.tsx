@@ -11,7 +11,7 @@ export default function FormComponent({ onSubmit }: formHandleProp) {
   //Due Date
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimedText = text.trim();
     const selectedPriority = priority;
