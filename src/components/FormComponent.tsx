@@ -25,11 +25,11 @@ export default function FormComponent({ onSubmit }: formHandleProp) {
   };
   return (
     <form
-      className="grid grid-cols-2 items-center gap-3 "
+      className="grid grid-cols-1 lg:grid-cols-2 items-center gap-3 "
       onSubmit={handleSubmit}
     >
       <input
-        className="col-span-2 px-1 py-3 border border-indigo-200 focus:outline-none rounded-sm "
+        className="lg:col-span-2 px-1 py-3 border border-indigo-200 focus:outline-none rounded-sm "
         aria-label="Todo description"
         placeholder="Add a new task..."
         value={text}
@@ -56,7 +56,7 @@ export default function FormComponent({ onSubmit }: formHandleProp) {
           dateFormat="dd/MM/yyyy"
         />
       </div>
-      <button className="col-span-2 bg-indigo-500 p-4 rounded-sm cursor-pointer text-white">
+      <button className="lg:col-span-2 bg-indigo-500 p-4 rounded-sm cursor-pointer text-white">
         Add
       </button>
     </form>
